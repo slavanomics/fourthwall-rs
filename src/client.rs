@@ -15,7 +15,6 @@ impl StorefrontClient {
         Ok(Self {
             http: HttpClient::builder()
                 .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
-                .timeout(Duration::from_secs(15))
                 .build()?,
             base: Url::parse("https://storefront-api.fourthwall.com/v1/")?,
             token: token.into(),
