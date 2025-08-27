@@ -1,6 +1,6 @@
+use crate::error::ApiError;
 use reqwest::{Client as HttpClient, Url};
 use std::time::Duration;
-use crate::error::ApiError;
 
 #[derive(Clone, Debug)]
 pub struct StorefrontClient {
@@ -12,10 +12,17 @@ pub struct StorefrontClient {
 impl StorefrontClient {
     /// `token` is the Storefront token (ptkn_xxx). It is sent as `storefront_token` query param.
     pub fn new(token: impl Into<String>) -> Result<Self, ApiError> {
+        let builder = reqwest::Client::builder().user_agent(concat!(
+            env!("CARGO_PKG_NAME"),
+            "/",
+            env!("CARGO_PKG_VERSION")
+        ));
+        #[cfg(not(target_arch = "wasm32"))]
+        let builder = builder.timeout(std::time::Duration::from_secs(15));
+        let http = builder.build()?;
+
         Ok(Self {
-            http: HttpClient::builder()
-                .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
-                .build()?,
+            http: http,
             base: Url::parse("https://storefront-api.fourthwall.com/v1/")?,
             token: token.into(),
         })
